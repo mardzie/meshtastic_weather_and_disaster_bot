@@ -16,7 +16,7 @@ pub struct Config {
 pub struct Forecast {
     /// How many units of forecast time should be fetched.
     pub forecast_count: u8,
-    /// The expiry in seconds.
+    /// The time to live in seconds.
     pub ttl_s: u32,
 }
 
