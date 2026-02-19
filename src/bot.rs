@@ -1,18 +1,19 @@
-use crate::{config::Config, consts::DEFAULT_CONFIG_PATH};
+use crate::{config::Config, consts::CONFIG_PATH};
 
 pub mod error;
 
 use error::Error;
+use open_weather_map_api::OwmApi;
 
 #[derive(Debug)]
 pub struct Bot {
     config: Config,
-    owm_api_key: String,
+    owm_api: OwmApi,
 }
 
 impl Bot {
     pub async fn new() -> Result<Self, Error> {
-        let config = match Config::load(DEFAULT_CONFIG_PATH).await? {
+        let config = match Config::load(CONFIG_PATH).await? {
             Ok(config) => config,
             Err(config) => config,
         };
@@ -31,13 +32,17 @@ impl Bot {
             Err(e) => return Err(Error::OpenWeatherMapApiKeyPath(e)),
         };
 
-        Ok(Self {
-            config,
+        let owm_api = OwmApi::new(
             owm_api_key,
-        })
+            chrono::TimeDelta::seconds(config.forecast.ttl_s as i64),
+        );
+
+        Ok(Self { config, owm_api })
     }
 
     pub async fn run(&mut self) -> Result<(), Error> {
+        todo!("Implement run!");
+
         Ok(())
     }
 }

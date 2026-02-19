@@ -6,9 +6,18 @@ pub mod error;
 
 use error::Error;
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub openweathermap_api_key_path_var: String,
+    pub forecast: Forecast,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Forecast {
+    /// How many units of forecast time should be fetched.
+    pub forecast_count: u8,
+    /// The expiry in seconds.
+    pub ttl_s: u32,
 }
 
 impl Config {
@@ -48,5 +57,17 @@ impl Config {
         tracing::debug!("Wrote config to {}", path.as_ref().to_string_lossy());
 
         Ok(())
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            openweathermap_api_key_path_var: "OPEN_WEATHER_MAP_API_KEY".to_string(),
+            forecast: Forecast {
+                forecast_count: 6,
+                ttl_s: 10800,
+            },
+        }
     }
 }

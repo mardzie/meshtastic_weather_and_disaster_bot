@@ -3,15 +3,29 @@ name = "meshtastic_weather_and_disaster_bot"
 version = "0.1.0"
 edition = "2024"
 
-[dependencies]
-anyhow = "1.0.101"
-meshtastic = "0.1.8"
+[workspace]
+resolver = "3"
+members = ["crates/open_weather_map_api"]
+
+[workspace.dependencies]
+chrono = "0.4.43"
 reqwest = "0.13.2"
-rss = "2.0.12"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 thiserror = "2.0.18"
+tracing = "0.1.44"
+
+[dependencies]
+anyhow = "1.0.101"
+chrono.workspace = true
+meshtastic = "0.1.8"
+open_weather_map_api = { path = "crates/open_weather_map_api" }
+reqwest.workspace = true
+rss = "2.0.12"
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
 tokio = "1.49.0"
 toml = "1.0.2"
-tracing = "0.1.44"
-tracing-subscriber = "0.3.22"
+tracing.workspace = true
+tracing-subscriber = { version = "0.3.22", features = ["env-filter", "std"] }
