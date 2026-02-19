@@ -8,7 +8,7 @@ use error::Error;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
-    pub openweathermap_api_key_path_var: String,
+    pub owm_api_key_env_var: String,
     pub forecast: Forecast,
 }
 
@@ -63,7 +63,7 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            openweathermap_api_key_path_var: "OPEN_WEATHER_MAP_API_KEY".to_string(),
+            owm_api_key_env_var: "OWM_API_KEY".to_string(),
             forecast: Forecast {
                 forecast_count: 6,
                 ttl_s: 10800,

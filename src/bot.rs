@@ -18,7 +18,7 @@ impl Bot {
             Err(config) => config,
         };
 
-        let owm_api_key = match std::env::var(&config.openweathermap_api_key_path_var) {
+        let owm_api_key = match std::env::var(&config.owm_api_key_env_var) {
             Ok(key) => key,
             Err(std::env::VarError::NotPresent) => {
                 tracing::error!(
