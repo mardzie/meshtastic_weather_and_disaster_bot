@@ -16,8 +16,12 @@ pub struct Config {
 pub struct Forecast {
     /// How many units of forecast time should be fetched.
     pub forecast_count: u8,
-    /// The time to live in seconds.
-    pub ttl_s: u32,
+    /// The time to live in seconds for cached forcasts.
+    pub cache_ttl_s: u32,
+    /// Controls how often the cache gets cleaned.
+    /// 
+    /// The cache cleans itself every time this value is hit.
+    pub soft_cache_limit: usize,
 }
 
 impl Config {
@@ -66,7 +70,8 @@ impl Default for Config {
             owm_api_key_env_var: "OWM_API_KEY".to_string(),
             forecast: Forecast {
                 forecast_count: 6,
-                ttl_s: 10800,
+                cache_ttl_s: 10800,
+                soft_cache_limit: 32,
             },
         }
     }

@@ -21,14 +21,14 @@ type Longitude = f64;
 #[derive(Debug)]
 pub struct OwmApi {
     api_key: String,
-    cache: Cache,
+    cache: Cache<essential::Forecast>,
 }
 
 impl OwmApi {
-    pub fn new(api_key: String, cache_expiry: Duration) -> Self {
+    pub fn new(api_key: String, cache_expiry: Duration, soft_cache_limit: usize) -> Self {
         Self {
             api_key,
-            cache: Cache::new(cache_expiry),
+            cache: Cache::new(cache_expiry, soft_cache_limit),
         }
     }
 

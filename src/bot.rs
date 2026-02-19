@@ -34,7 +34,8 @@ impl Bot {
 
         let owm_api = OwmApi::new(
             owm_api_key,
-            chrono::TimeDelta::seconds(config.forecast.ttl_s as i64),
+            chrono::TimeDelta::seconds(config.forecast.cache_ttl_s as i64),
+            config.forecast.soft_cache_limit,
         );
 
         Ok(Self { config, owm_api })
