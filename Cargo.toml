@@ -26,6 +26,7 @@ serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 tokio = "1.49.0"
+tokio-serial = "5.4.5"
 toml = "1.0.2"
 tracing.workspace = true
 tracing-subscriber = { version = "0.3.22", features = ["env-filter", "std"] }

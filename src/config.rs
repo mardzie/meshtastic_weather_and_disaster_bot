@@ -10,6 +10,7 @@ use error::Error;
 pub struct Config {
     pub owm_api_key_env_var: String,
     pub forecast: Forecast,
+    pub meshtastic: Meshtastic,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -22,6 +23,14 @@ pub struct Forecast {
     ///
     /// The cache cleans itself every time this value is hit.
     pub soft_cache_limit: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Meshtastic {
+    /// The serial port of the meshtastic radio.
+    ///
+    /// Use `dmesg | grep tty` and the `info` message to choose one.
+    pub serial_path: String,
 }
 
 impl Config {
@@ -72,6 +81,9 @@ impl Default for Config {
                 forecast_count: 6,
                 cache_ttl_s: 10800,
                 soft_cache_limit: 32,
+            },
+            meshtastic: Meshtastic {
+                serial_path: String::from("/dev/ttyEXAMPLE"),
             },
         }
     }
