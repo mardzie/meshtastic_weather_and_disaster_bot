@@ -17,7 +17,7 @@ pub struct Config {
 pub struct Forecast {
     /// How many units of forecast time should be fetched.
     pub forecast_count: u8,
-    /// The time to live in seconds for cached forcasts.
+    /// The time to live in seconds for cached forecasts.
     pub cache_ttl_s: u32,
     /// Controls how often the cache gets cleaned.
     ///
@@ -34,7 +34,7 @@ pub struct Meshtastic {
 }
 
 impl Config {
-    /// Tries to load the config from `path`. If not existant write the default config to the `path` and return it.
+    /// Tries to load the config from `path`. If not existent write the default config to the `path` and return it.
     ///
     /// When there is a `Ok` in `Result<Self, Self>` then the config was loaded, on `Err` the default config is returned.
     pub async fn load(path: impl AsRef<Path>) -> Result<Result<Self, Self>, Error> {
