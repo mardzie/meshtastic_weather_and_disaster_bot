@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Debug, hash::Hash, num::NonZero};
+use std::{collections::HashMap, fmt::Debug, hash::Hash};
 
 use crate::{Latitude, Longitude};
 

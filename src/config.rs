@@ -19,7 +19,7 @@ pub struct Forecast {
     /// The time to live in seconds for cached forcasts.
     pub cache_ttl_s: u32,
     /// Controls how often the cache gets cleaned.
-    /// 
+    ///
     /// The cache cleans itself every time this value is hit.
     pub soft_cache_limit: usize,
 }

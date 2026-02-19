@@ -98,14 +98,14 @@ pub struct Wind {
 pub struct Rain {
     /// Rain volume for the last 3 hours in mm
     #[serde(alias = "3h")]
-    pub three_hours: u16,
+    pub three_hours: f32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Snow {
     /// Snow volume for the last 3 hours in mm.
     #[serde(alias = "3h")]
-    pub three_hours: u16,
+    pub three_hours: f32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
