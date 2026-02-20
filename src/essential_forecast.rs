@@ -3,8 +3,8 @@ use std::ops::Deref;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Forecast {
-    pub forecast_segments: Vec<ForecastSegment>,
+pub enum Forecast {
+    Hour3(Vec<ForecastSegment>),
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -22,22 +22,24 @@ pub struct ForecastSegment {
 
     /// Humidity
     ///
-    /// %, 0 - 100
-    pub humidity: u8,
+    /// %, 0.0 - 1.0
+    pub humidity: f32,
     /// Weather conditions that are active.
     pub weather: Vec<Weather>,
 
     /// Cloudiness
     ///
-    /// %, 0 - 100
-    pub clouds: u8,
+    /// %, 0.0 - 1.0
+    pub clouds: f32,
     pub wind: Wind,
     pub visibility: Option<u16>,
 
     /// Probability of precipitation.
     ///
-    /// %, 0 - 100
-    pub pop: u8,
+    /// %, 0.0 - 1.0
+    pub pop: f32,
+    /// Day/Night
+    pub day_time: DayTime,
     /// Rain volume in cm/X hours.
     pub rain: Option<f32>,
     /// Snow volume in cm/X hours.
@@ -102,9 +104,9 @@ pub enum DayTime {
     Night,
 }
 
-impl From<crate::forecast::Forecast> for Forecast {
-    fn from(lfc: crate::forecast::Forecast) -> Self {
-        let mut forecasts: Vec<ForecastSegment> = lfc
+impl From<open_weather_map_api::forecast::Forecast> for Forecast {
+    fn from(lfc: open_weather_map_api::forecast::Forecast) -> Self {
+        let mut forecast: Vec<ForecastSegment> = lfc
             .list
             .into_iter()
             .map(|fc| {
@@ -123,7 +125,7 @@ impl From<crate::forecast::Forecast> for Forecast {
                         pressure: fc_main.pressure,
                         ground_level: fc_main.grnd_level,
                     },
-                    humidity: fc_main.humidity,
+                    humidity: fc_main.humidity as f32 / 100.0,
                     weather: {
                         let len = fc.weather.len();
                         let mut weather =
@@ -136,23 +138,81 @@ impl From<crate::forecast::Forecast> for Forecast {
                         weather.shrink_to_fit();
                         weather
                     },
-                    clouds: fc.clouds.all,
+                    clouds: fc.clouds.all as f32 / 100.0,
                     wind: Wind {
                         speed: fc.wind.speed,
                         deg: fc.wind.deg,
                         gust: fc.wind.gust,
                     },
                     visibility: fc.visibility,
-                    pop: (fc.pop * 100.0) as u8,
+                    pop: fc.pop,
+                    day_time: DayTime::from(fc.sys.pod),
                     rain: fc.rain.map(|r| r.three_hours),
                     snow: fc.snow.map(|r| r.three_hours),
                 }
             })
             .collect();
-        forecasts.shrink_to_fit();
+        forecast.shrink_to_fit();
 
-        Self {
-            forecast_segments: forecasts,
+        Self::Hour3(forecast)
+    }
+}
+
+impl From<&Forecast> for meshtastic::protobufs::EnvironmentMetrics {
+    /// Input a full day forecast to get the 24h rainfall forecast metric.
+    fn from(forecast: &Forecast) -> Self {
+        let forecast_segments: Vec<ForecastSegment> = match forecast {
+            Forecast::Hour3(fc) => {
+                if fc.len() >= 8 {
+                    fc[..8].iter().cloned().collect()
+                } else {
+                    vec![fc.get(0).expect("Failed to access forecast for environment metrics update. No segments available.").clone()]
+                }
+            }
+        };
+
+        let (fcs, rainfall_1h) = match forecast {
+            Forecast::Hour3(fc) => {
+                let fcs = fc[0].clone();
+
+                (fcs.clone(), fcs.rain.map_or(None, |rain| Some(rain / 3.0)))
+            }
+        };
+
+        let rainfall_24h =
+            forecast_segments
+                .into_iter()
+                .fold(None, |acc: Option<f32>, fc: ForecastSegment| {
+                    if let Some(rain) = fc.rain {
+                        acc.map_or_else(|| Some(rain), |rain_prev| Some(rain_prev + rain))
+                    } else {
+                        acc
+                    }
+                });
+
+        meshtastic::protobufs::EnvironmentMetrics {
+            temperature: Some(fcs.temp.temp),
+            relative_humidity: Some(fcs.humidity),
+            barometric_pressure: Some(fcs.pressure.ground_level),
+            gas_resistance: None,
+            voltage: None,
+            current: None,
+            iaq: None,
+            distance: None,
+            lux: None,
+            white_lux: None,
+            ir_lux: None,
+            uv_lux: None,
+            wind_direction: Some(fcs.wind.deg as u32),
+            wind_speed: Some(fcs.wind.speed),
+            weight: None,
+            wind_gust: Some(fcs.wind.gust),
+            wind_lull: None,
+            radiation: None,
+            rainfall_1h: rainfall_1h,
+            rainfall_24h: rainfall_24h,
+            soil_moisture: None,
+            soil_temperature: None,
         }
     }
 }
@@ -227,6 +287,19 @@ impl Atmosphere {
                 tracing::error!("Atmosphere: Invalid Atmosphere ID {}", invalid_id);
                 panic!("Atmosphere: Invalid Atmosphere ID {}", invalid_id);
             }
+        }
+    }
+}
+
+impl From<char> for DayTime {
+    fn from(ch: char) -> Self {
+        match ch.to_ascii_lowercase() {
+            'd' => Self::Day,
+            'n' => Self::Night,
+            ch => panic!(
+                "Failed to create `DayTime` from {}. `d` and `n` are valid.",
+                ch
+            ),
         }
     }
 }

@@ -482,6 +482,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
 
 [[package]]
+name = "hex"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
 name = "http"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -890,12 +896,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "meshtastic_api"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "meshtastic",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-serial",
+ "tracing",
+]
+
+[[package]]
 name = "meshtastic_weather_and_disaster_bot"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
  "meshtastic",
+ "meshtastic_api",
  "open_weather_map_api",
  "reqwest",
  "rss",
@@ -903,7 +922,6 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.18",
  "tokio",
- "tokio-serial",
  "toml",
  "tracing",
  "tracing-subscriber",

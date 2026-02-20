@@ -1,0 +1,12 @@
+[package]
+name = "meshtastic_api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+meshtastic.workspace = true
+tokio-serial.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+hex.workspace = true

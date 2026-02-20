@@ -3,12 +3,16 @@ use crate::{config::Config, consts::CONFIG_PATH};
 pub mod error;
 
 use error::Error;
+use meshtastic_api::MeshtasticApi;
 use open_weather_map_api::OwmApi;
 
 #[derive(Debug)]
 pub struct Bot {
     config: Config,
     owm_api: OwmApi,
+    meshtastic_api: MeshtasticApi,
+
+    listener_task: Option<tokio::task::JoinHandle<()>>,
 }
 
 impl Bot {
@@ -38,31 +42,19 @@ impl Bot {
             config.forecast.soft_cache_limit,
         );
 
-        let available_ports = meshtastic::utils::stream::available_serial_ports()?;
-        tracing::info!("Available Serial Ports: {:?}", available_ports);
+        let meshtastic_api =
+            meshtastic_api::MeshtasticApi::new(config.meshtastic.serial_path.clone()).await?;
 
-        let stream_api = meshtastic::api::StreamApi::new();
-        let stream_handle = meshtastic::utils::stream::build_serial_stream(
-            config.meshtastic.serial_path.clone(),
-            None,
-            None,
-            None,
-        )?;
-        let (mut decoded_listener, stream_api) = stream_api.connect(stream_handle).await;
+        Ok(Self {
+            config,
+            owm_api,
+            meshtastic_api,
 
-        let config_id = meshtastic::utils::generate_rand_id();
-        let stream_api = stream_api.configure(config_id).await?;
-
-        while let Some(decoded) = decoded_listener.recv().await {
-            tracing::debug!("Message: {:?}", decoded);
-        }
-
-        Ok(Self { config, owm_api })
+            listener_task: None,
+        })
     }
 
     pub async fn run(&mut self) -> Result<(), Error> {
-        todo!("Implement run!");
-
         Ok(())
     }
 }

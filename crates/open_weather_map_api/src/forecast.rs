@@ -2,8 +2,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Latitude, Longitude};
 
-pub mod essential;
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Forecast {
     /// Internal parameter.
@@ -60,7 +58,7 @@ pub struct MainValues {
     pub sea_level: f32,
     /// Atmospheric pressure at ground level, hPa
     pub grnd_level: f32,
-    /// Humidity, %
+    /// Humidity, % 0 - 100
     pub humidity: u8,
     /// Internal parameter.
     temp_kf: f32,
@@ -80,7 +78,7 @@ pub struct Weather {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Clouds {
-    /// Cloudiness, %
+    /// Cloudiness, % 0 - 100
     pub all: u8,
 }
 

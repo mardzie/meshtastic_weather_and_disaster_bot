@@ -1,14 +1,7 @@
 use chrono::Duration;
 use tracing::instrument;
 
-use crate::{
-    cache::Cache,
-    error::Error,
-    forecast::{
-        Forecast,
-        essential::{self},
-    },
-};
+use crate::{cache::Cache, error::Error, forecast::Forecast};
 
 mod cache;
 
@@ -21,7 +14,7 @@ type Longitude = f64;
 #[derive(Debug)]
 pub struct OwmApi {
     api_key: String,
-    cache: Cache<essential::Forecast>,
+    cache: Cache<Forecast>,
 }
 
 impl OwmApi {
@@ -38,7 +31,7 @@ impl OwmApi {
         lat: Latitude,
         lon: Longitude,
         count: Option<u8>,
-    ) -> Result<essential::Forecast, Error> {
+    ) -> Result<Forecast, Error> {
         const MAX_REQUESTABLE: u8 = (24 / 3) * 5; // (24 hours / 3 hours) * 5 days: This calculates the max count.
 
         let forecast = if let Some(forecast_hit) = self.cache.lookup(lat, lon) {
@@ -68,8 +61,7 @@ impl OwmApi {
                 response_text
             );
 
-            let forecast: essential::Forecast =
-                serde_json::from_str::<Forecast>(&response_text)?.into();
+            let forecast: Forecast = serde_json::from_str::<Forecast>(&response_text)?.into();
             self.cache.cache(lat, lon, forecast.clone());
 
             forecast
@@ -82,7 +74,7 @@ impl OwmApi {
         &mut self,
         city_name: String,
         country_code: Option<String>,
-    ) -> Result<essential::Forecast, Error> {
+    ) -> Result<Forecast, Error> {
         todo!()
     }
 

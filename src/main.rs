@@ -6,6 +6,7 @@ use crate::bot::Bot;
 mod bot;
 mod config;
 mod consts;
+mod essential_forecast;
 
 #[tokio::main]
 async fn main() -> Result<()> {

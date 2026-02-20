@@ -5,7 +5,7 @@ edition = "2024"
 
 [workspace]
 resolver = "3"
-members = ["crates/open_weather_map_api"]
+members = ["crates/meshtastic_api","crates/open_weather_map_api"]
 
 [workspace.dependencies]
 chrono = "0.4.43"
@@ -14,19 +14,23 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 thiserror = "2.0.18"
 tracing = "0.1.44"
+meshtastic = "0.1.8"
+tokio-serial = "5.4.5"
+tokio = "1.49.0"
+hex = "0.4.3"
 
 [dependencies]
+meshtastic.workspace = true
+tokio.workspace = true
 anyhow = "1.0.101"
 chrono.workspace = true
-meshtastic = "0.1.8"
-open_weather_map_api = { path = "crates/open_weather_map_api" }
+open_weather_map_api.path = "crates/open_weather_map_api"
+meshtastic_api.path = "crates/meshtastic_api"
 reqwest.workspace = true
 rss = "2.0.12"
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
-tokio = "1.49.0"
-tokio-serial = "5.4.5"
 toml = "1.0.2"
 tracing.workspace = true
 tracing-subscriber = { version = "0.3.22", features = ["env-filter", "std"] }
