@@ -20,8 +20,10 @@ impl MeshtasticApi {
         tracing::info!("Available Serial Ports: {:?}", available_ports);
 
         let stream_api = meshtastic::api::StreamApi::new();
+        tracing::trace!("Creating serial stream...");
         let stream_handle =
             meshtastic::utils::stream::build_serial_stream(serial_path, None, None, None)?;
+        tracing::trace!("Serial stream created.");
         let (decoded_listener, stream_api) = stream_api.connect(stream_handle).await;
 
         let my_info_task = tokio::task::spawn(async { Self::wait_for_my_info(decoded_listener) });
