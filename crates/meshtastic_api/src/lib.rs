@@ -3,12 +3,13 @@ use tokio::sync::mpsc::UnboundedReceiver;
 
 pub use meshtastic::protobufs::MyNodeInfo;
 
-use crate::{channel::Channel, node_id::NodeId, packet::Packet};
+use crate::{channel::Channel, node_id::NodeId, packet::Packet, packet_router::Router};
 
 pub mod channel;
 pub mod error;
 pub mod node_id;
 pub mod packet;
+pub mod packet_router;
 
 pub const MAX_PAYLOAD_SIZE: usize = 200;
 
@@ -17,6 +18,7 @@ pub struct MeshtasticApi {
     stream_api: meshtastic::api::ConnectedStreamApi,
     node_id: NodeId,
 
+    router: Router,
     listener_task: tokio::task::JoinHandle<()>,
     exit_sender: tokio::sync::broadcast::Sender<()>,
 }
@@ -40,6 +42,9 @@ impl MeshtasticApi {
 
         let (my_node_info, decoded_listener) = my_info_task.await?.await;
 
+        let node_id = NodeId::from(my_node_info);
+        let router = Router::new(node_id.inner());
+
         let (exit_sender, mut rx) = tokio::sync::broadcast::channel(1);
         let listener_task = tokio::task::spawn(async move {
             tokio::select! {
@@ -54,8 +59,9 @@ impl MeshtasticApi {
 
         Ok(Self {
             stream_api,
-            node_id: NodeId::from(my_node_info),
+            node_id,
 
+            router,
             listener_task,
             exit_sender,
         })
@@ -147,7 +153,7 @@ impl MeshtasticApi {
     }
 
     pub async fn send_message(
-        &self,
+        &mut self,
         text: String,
         target: packet::Target,
         channel: Option<Channel>,
@@ -159,7 +165,7 @@ impl MeshtasticApi {
         match self
             .stream_api
             .send_text(
-                packet_router,
+                &mut self.router,
                 text,
                 target.into(),
                 true,

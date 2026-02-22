@@ -3,6 +3,12 @@ use std::ops::Deref;
 #[derive(Debug, Clone, Copy)]
 pub struct NodeId(u32);
 
+impl NodeId {
+    pub fn inner(&self) -> u32 {
+        self.0
+    }
+}
+
 impl From<u32> for NodeId {
     fn from(id: u32) -> Self {
         Self(id)
