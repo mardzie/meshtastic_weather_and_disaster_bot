@@ -11,6 +11,7 @@ pub struct Bot {
     config: Config,
     owm_api: OwmApi,
     meshtastic_api: MeshtasticApi,
+    packet_receiver: tokio::sync::mpsc::Receiver<meshtastic_api::packet::Packet>,
 
     listener_task: Option<tokio::task::JoinHandle<()>>,
 }
@@ -42,13 +43,26 @@ impl Bot {
             config.forecast.soft_cache_limit,
         );
 
-        let meshtastic_api =
-            meshtastic_api::MeshtasticApi::new(config.meshtastic.serial_path.clone()).await?;
+        let available_ports = meshtastic::utils::stream::available_serial_ports()?;
+        tracing::info!("Available Serial Ports: {:?}", available_ports);
+
+        if config.meshtastic.serial_path == Config::default().meshtastic.serial_path {
+            tracing::error!("Please set the Meshtastic serial path!");
+        };
+
+        let (packet_sender, packet_receiver) =
+            tokio::sync::mpsc::channel(config.meshtastic.packet_buffer);
+        let meshtastic_api = meshtastic_api::MeshtasticApi::new(
+            config.meshtastic.serial_path.clone(),
+            packet_sender,
+        )
+        .await?;
 
         Ok(Self {
             config,
             owm_api,
             meshtastic_api,
+            packet_receiver,
 
             listener_task: None,
         })

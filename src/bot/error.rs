@@ -6,4 +6,6 @@ pub enum Error {
     OpenWeatherMapApiKeyPath(#[from] std::env::VarError),
     #[error("Meshtastic API Error: {0}")]
     MeshtasticApi(#[from] meshtastic_api::error::Error),
+    #[error("Tokio Serial Error: {0}")]
+    TokioSerial(#[from] tokio_serial::Error),
 }

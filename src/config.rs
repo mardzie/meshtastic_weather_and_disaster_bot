@@ -31,6 +31,7 @@ pub struct Meshtastic {
     ///
     /// Use `dmesg | grep tty` and the `info` message to choose one.
     pub serial_path: String,
+    pub packet_buffer: usize,
 }
 
 impl Config {
@@ -84,6 +85,7 @@ impl Default for Config {
             },
             meshtastic: Meshtastic {
                 serial_path: String::from("/dev/ttyEXAMPLE"),
+                packet_buffer: 4,
             },
         }
     }

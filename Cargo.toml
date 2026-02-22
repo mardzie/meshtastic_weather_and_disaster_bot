@@ -34,3 +34,4 @@ thiserror.workspace = true
 toml = "1.0.2"
 tracing.workspace = true
 tracing-subscriber = { version = "0.3.22", features = ["env-filter", "std"] }
+tokio-serial.workspace = true
