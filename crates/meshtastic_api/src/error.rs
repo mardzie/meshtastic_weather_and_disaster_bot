@@ -5,6 +5,3 @@ pub enum Error {
     #[error("Join Error: Failed to join a task: {0}")]
     JoinError(#[from] tokio::task::JoinError),
 }
-
-#[derive(Debug, thiserror::Error)]
-pub enum SendError {}

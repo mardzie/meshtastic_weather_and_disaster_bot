@@ -318,12 +318,14 @@ impl Bot {
             "Weather Bot Error\n\
             Failed to build weather report!\n\
             {}\n\
-            Weather: {}\n\
-            Temp: {:.0} C; Feels: {:.0} C;\n\
-            Clouds: {} %\n\
-            Prob Rain: {:.0} %; Rain: {:.0} mm; Snow: {:.0} cm\n\
-            Press: {:.0}\n\
-            Wind: {} m/s; Deg: {}",
+            {}\n\
+            Temp {:.0} C\n\
+            Feels {:.0} C\n\
+            Prob Rain {:.0} %\n\
+            Rain {:.0} mm\n\
+            Snow {:.0} cm\n\
+            Wind {} m/s\n\
+            Deg {}",
             fcs.date_time_txt,
             fcs.weather.iter().fold(String::new(), |mut acc, v| {
                 acc.push_str(v);
@@ -331,11 +333,9 @@ impl Bot {
             }),
             fcs.temp.temp.round(),
             fcs.temp.feels_like.round(),
-            fcs.clouds * 100.0,
             fcs.pop * 100.0,
-            fcs.rain.map_or(0.0, |r| r * 100.0),
-            fcs.snow.map_or(0.0, |s| s * 100.0),
-            fcs.pressure.pressure.round(),
+            fcs.rain.map_or(0.0, |r| r),
+            fcs.snow.map_or(0.0, |s| s),
             fcs.wind.speed,
             fcs.wind.deg
         )
