@@ -95,15 +95,15 @@ impl Default for Config {
 
             forecast_request_command: String::from("!fc"),
             forecast_header: String::from(
-                "{DATE}\n\
-                Wetterbericht für {COORDS}",
+                "{FC_DATETIME}\n\
+                Wetterbericht {WEATHER}\n",
             ),
             forecast_segment: String::from(
-                "{FC_DATETIME}\n\
-                {WEATHER}\n\
-                {TEMP} °C Fühl: {FEELS_LIKE_TEMP °C}\n\
-                Wind: {WIND_SPEED} m/s; {WIND_DEG}°\n\
-                Regen Wrsc.: {POP}; {RAIN} mm Schnee: {SNOW}",
+                "{TEMP} °C\n\
+                Fühl {FEELS_LIKE_TEMP} C\n\
+                Wind {WIND_SPEED} m/s {WIND_DEG}°\n\
+                Regen Wrsc. {POP} {RAIN} mm\n\
+                Schnee {SNOW}",
             ),
             contact: "CONTACT INFO".to_string(),
         }
