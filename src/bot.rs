@@ -80,33 +80,35 @@ impl Bot {
         while let Some(packet) = self.packet_receiver.recv().await {
             tracing::debug!("Got packet: {:?}", packet);
 
+            if packet.via_mqtt {
+                continue;
+            }
+
             let args: Vec<&str> = packet.payload.trim().split(' ').collect();
             if args.first() != Some(&self.config.forecast_request_command.as_str()) {
                 continue;
             };
 
-            let (lat, lon) = match (args.get(1), args.get(2)) {
+            let text = match (args.get(1), args.get(2)) {
                 (Some(lat), Some(lon)) => {
-                    if let Ok(coords) = Self::parse_lat_lon(lat, lon) {
-                        coords
+                    if let Ok((lat, lon)) = Self::parse_lat_lon(lat, lon) {
+                        self.get_forecast_text(lat, lon)
+                            .await
+                            .map_or_else(|e_fc| e_fc, |fc| fc)
                     } else {
-                        continue;
+                        format!(
+                            "{}\n\
+                            Failed to parse coordinates.",
+                            Self::get_manual(&self.config.forecast_request_command)
+                        )
                     }
                 }
                 _ => {
                     tracing::warn!("Got Message: {}; but args arent correct.", packet.payload);
-                    continue;
+                    Self::get_manual(&self.config.forecast_request_command)
                 }
             };
 
-            if packet.via_mqtt {
-                continue;
-            }
-
-            let text = self
-                .get_forecast_text(lat, lon)
-                .await
-                .map_or_else(|e_fc| e_fc, |fc| fc);
             let payload = match Payload::new(text.clone()) {
                 Ok(payload) => payload,
                 Err(_) => {
@@ -319,7 +321,7 @@ impl Bot {
             Weather: {}\n\
             Temp: {:.0} C; Feels: {:.0} C;\n\
             Clouds: {} %\n\
-            Prob Rain: {:.2} %; Rain: {:.0} mm; Snow: {:.0} cm\n\
+            Prob Rain: {:.0} %; Rain: {:.0} mm; Snow: {:.0} cm\n\
             Press: {:.0}\n\
             Wind: {} m/s; Deg: {}",
             fcs.date_time_txt,
@@ -329,14 +331,18 @@ impl Bot {
             }),
             fcs.temp.temp.round(),
             fcs.temp.feels_like.round(),
-            fcs.clouds,
-            fcs.pop,
-            fcs.rain.map_or(0.0, |r| r),
-            fcs.snow.map_or(0.0, |s| s),
+            fcs.clouds * 100.0,
+            fcs.pop * 100.0,
+            fcs.rain.map_or(0.0, |r| r * 100.0),
+            fcs.snow.map_or(0.0, |s| s * 100.0),
             fcs.pressure.pressure.round(),
             fcs.wind.speed,
             fcs.wind.deg
         )
+    }
+
+    fn get_manual(command: &str) -> String {
+        format!("{} [LAT] [LON]", command)
     }
 
     fn parse_lat_lon(lat: &str, lon: &str) -> Result<(f64, f64), ()> {
