@@ -11,6 +11,11 @@ pub struct Config {
     pub owm_api_key_env_var: String,
     pub forecast: Forecast,
     pub meshtastic: Meshtastic,
+
+    pub forecast_request_command: String,
+    pub forecast_header: String,
+    pub forecast_segment: String,
+    pub contact: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -87,6 +92,20 @@ impl Default for Config {
                 serial_path: String::from("/dev/ttyEXAMPLE"),
                 packet_buffer: 4,
             },
+
+            forecast_request_command: String::from("!fc"),
+            forecast_header: String::from(
+                "{DATE}\n\
+                Wetterbericht für {COORDS}",
+            ),
+            forecast_segment: String::from(
+                "{FC_DATETIME}\n\
+                {WEATHER}\n\
+                {TEMP} °C Fühl: {FEELS_LIKE_TEMP °C}\n\
+                Wind: {WIND_SPEED} m/s; {WIND_DEG}°\n\
+                Regen Wrsc.: {POP}; {RAIN} mm Schnee: {SNOW}",
+            ),
+            contact: "CONTACT INFO".to_string(),
         }
     }
 }

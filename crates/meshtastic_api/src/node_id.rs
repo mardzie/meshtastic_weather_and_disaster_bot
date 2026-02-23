@@ -1,5 +1,7 @@
 use std::ops::Deref;
 
+use crate::packet::Target;
+
 #[derive(Debug, Clone, Copy)]
 pub struct NodeId(u32);
 
@@ -26,6 +28,20 @@ impl From<meshtastic::protobufs::MyNodeInfo> for NodeId {
         Self::from(my_node_info.my_node_num)
     }
 }
+
+impl From<&Target> for NodeId {
+    fn from(target: &Target) -> Self {
+        NodeId(target.into_id())
+    }
+}
+
+impl PartialEq for NodeId {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl Eq for NodeId {}
 
 impl Deref for NodeId {
     type Target = u32;

@@ -3,15 +3,17 @@ use tokio::sync::mpsc::UnboundedReceiver;
 
 pub use meshtastic::protobufs::MyNodeInfo;
 
-use crate::{channel::Channel, node_id::NodeId, packet::Packet, packet_router::Router};
+use crate::{
+    channel::Channel, node_id::NodeId, packet::Packet, packet_router::Router, payload::Payload,
+};
 
 pub mod channel;
 pub mod error;
+pub mod hops;
 pub mod node_id;
 pub mod packet;
 pub mod packet_router;
-
-pub const MAX_PAYLOAD_SIZE: usize = 200;
+pub mod payload;
 
 #[derive(Debug)]
 pub struct MeshtasticApi {
@@ -148,34 +150,66 @@ impl MeshtasticApi {
         };
     }
 
+    #[inline]
     pub fn get_node_id(&self) -> NodeId {
         self.node_id
     }
 
+    #[inline]
     pub async fn send_message(
         &mut self,
-        text: String,
+        payload: Payload,
         target: packet::Target,
         channel: Option<Channel>,
-    ) -> Result<(), error::SendError> {
-        if text.len() > MAX_PAYLOAD_SIZE {
-            return Err(error::SendError::TooBig(text.len()));
-        };
-
-        match self
-            .stream_api
+    ) -> Result<(), meshtastic::errors::Error> {
+        self.stream_api
             .send_text(
                 &mut self.router,
-                text,
+                payload.inner(),
                 target.into(),
                 true,
                 channel.unwrap_or_default().into(),
             )
             .await
-        {
-            _ => {}
-        };
-
-        Ok(())
     }
+
+    #[inline]
+    pub fn is_own_node_id(&self, node_id: &NodeId) -> bool {
+        &self.node_id == node_id
+    }
+
+    // pub async fn send_message_with_hop_limit(
+    //     &mut self,
+    //     text: Payload,
+    //     target: packet::Target,
+    //     channel: Option<Channel>,
+    //     hops: hops::Hops,
+    // ) -> Result<(), meshtastic::errors::Error> {
+    //     self.stream_api
+    //         .send_to_radio_packet(Some(protobufs::to_radio::PayloadVariant::Packet(
+    //             protobufs::MeshPacket {
+    //                 from: *self.node_id,
+    //                 to: target.into_id(),
+    //                 channel: channel.unwrap_or_default().into_channel() as u32,
+    //                 id: meshtastic::utils::generate_rand_id(),
+    //                 rx_time: 0,
+    //                 rx_snr: 0.0,
+    //                 hop_limit: 0,
+    //                 want_ack: true,
+    //                 priority: meshtastic::protobufs::mesh_packet::Priority::Unset.into(),
+    //                 rx_rssi: 0,
+    //                 delayed: 0,
+    //                 via_mqtt: false,
+    //                 hop_start: hops.inner(),
+    //                 public_key: (),
+    //                 pki_encrypted: (),
+    //                 next_hop: (),
+    //                 relay_node: (),
+    //                 tx_after: (),
+    //                 transport_mechanism: (),
+    //                 payload_variant: (),
+    //             },
+    //         )))
+    //         .await
+    // }
 }

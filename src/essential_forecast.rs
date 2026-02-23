@@ -40,7 +40,7 @@ pub struct ForecastSegment {
     pub pop: f32,
     /// Day/Night
     pub day_time: DayTime,
-    /// Rain volume in cm/X hours.
+    /// Rain volume in mm/X hours.
     pub rain: Option<f32>,
     /// Snow volume in cm/X hours.
     pub snow: Option<f32>,
@@ -88,13 +88,17 @@ pub enum Atmosphere {
 #[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Wind {
     /// Wind speed.
+    /// 
+    /// m/s
     pub speed: f32,
 
     /// Wind direction in degrees.
     ///
     /// 0 = North, 90 = East, 180 = South, 270 = West
     pub deg: u16,
-    /// Gust speed
+    /// Gust speed.
+    /// 
+    /// m/s
     pub gust: f32,
 }
 
@@ -213,6 +217,16 @@ impl From<&Forecast> for meshtastic::protobufs::EnvironmentMetrics {
             rainfall_24h: rainfall_24h,
             soil_moisture: None,
             soil_temperature: None,
+        }
+    }
+}
+
+impl Deref for Forecast {
+    type Target = Vec<ForecastSegment>;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            Self::Hour3(v) => v,
         }
     }
 }

@@ -1,3 +1,5 @@
+use crate::node_id::NodeId;
+
 #[derive(Debug, Clone)]
 pub struct Packet {
     /// Source
@@ -80,5 +82,19 @@ impl From<Target> for meshtastic::packet::PacketDestination {
                 meshtastic::packet::PacketDestination::Node(meshtastic::types::NodeId::new(id))
             }
         }
+    }
+}
+
+impl PartialEq for Target {
+    fn eq(&self, other: &Self) -> bool {
+        self.into_id() == other.into_id()
+    }
+}
+
+impl Eq for Target {}
+
+impl From<&NodeId> for Target {
+    fn from(node_id: &NodeId) -> Self {
+        node_id.inner().into()
     }
 }

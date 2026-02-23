@@ -7,11 +7,4 @@ pub enum Error {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum SendError {
-    #[error(
-        "Message too Big: Message Size: {} > {} Max Message Size",
-        0,
-        crate::MAX_PAYLOAD_SIZE
-    )]
-    TooBig(usize),
-}
+pub enum SendError {}

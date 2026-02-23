@@ -1,4 +1,4 @@
-use std::{num::NonZero, ops::Deref};
+use std::num::NonZero;
 
 const DEFAULT_CHANNEL: u8 = 0;
 const MAX_CHANNEL: u8 = 7;
