@@ -38,12 +38,13 @@ impl MeshtasticApi {
         let (decoded_listener, stream_api) = stream_api.connect(stream_handle).await;
 
         tracing::debug!("Waiting for own node id...");
-        let my_info_task = tokio::task::spawn(async { Self::wait_for_my_info(decoded_listener) });
+        let my_info_task =
+            tokio::task::spawn(async { Self::wait_for_my_info(decoded_listener).await });
 
         let config_id = meshtastic::utils::generate_rand_id();
         let stream_api = stream_api.configure(config_id).await?;
 
-        let (my_node_info, decoded_listener) = my_info_task.await?.await;
+        let (my_node_info, decoded_listener) = my_info_task.await?;
         tracing::debug!("Got own node id: {}", my_node_info.my_node_num);
 
         let node_id = NodeId::from(my_node_info);
