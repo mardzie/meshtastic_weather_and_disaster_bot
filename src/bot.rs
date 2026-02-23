@@ -346,7 +346,7 @@ impl Bot {
     }
 
     fn parse_lat_lon(lat: &str, lon: &str) -> Result<(f64, f64), ()> {
-        match (lat.parse(), lon.parse()) {
+        match (lat.replace(",", ".").parse(), lon.replace(",", ".").parse()) {
             (Ok(lat), Ok(lon)) => Ok((lat, lon)),
             (Err(e), Ok(_)) => {
                 tracing::warn!("Failed to parse lat: {} into f64: {}", lat, e);
