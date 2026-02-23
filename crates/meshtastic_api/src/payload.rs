@@ -2,6 +2,7 @@ use std::ops::Deref;
 
 pub const MAX_PAYLOAD_SIZE: usize = 200;
 
+#[derive(Debug, Clone)]
 pub struct Payload(String);
 
 impl Payload {

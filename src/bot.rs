@@ -119,11 +119,12 @@ impl Bot {
 
                 if let Err(e) = self
                     .meshtastic_api
-                    .send_message(payload, target.clone(), None)
+                    .send_message(payload.clone(), target.clone(), None)
                     .await
                 {
                     tracing::warn!("Failed to send Message to {}: {}", target.into_id(), e);
                 };
+                tracing::info!("Sent Message {:?}", payload);
             }
         }
 
