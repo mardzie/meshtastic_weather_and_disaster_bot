@@ -75,7 +75,18 @@ impl Bot {
     }
 
     pub async fn run(&mut self) -> Result<(), Error> {
+        let _ = self
+            .meshtastic_api
+            .send_message(
+                Payload::new_unchecked("Weather Bot Starting".to_string()),
+                Target::PrimaryChannel,
+                None,
+            )
+            .await;
+
         while let Some(packet) = self.packet_receiver.recv().await {
+            tracing::trace!("Got packet: {:?}", packet);
+
             let args: Vec<&str> = packet.payload.trim().split(' ').collect();
             if args.first() != Some(&self.config.forecast_request_command.as_str()) {
                 continue;
@@ -95,37 +106,39 @@ impl Bot {
                 }
             };
 
-            if !packet.via_mqtt {
-                let text = self
-                    .get_forecast_text(lat, lon)
-                    .await
-                    .map_or_else(|e_fc| e_fc, |fc| fc);
-                let payload = match Payload::new(text.clone()) {
-                    Ok(payload) => payload,
-                    Err(_) => {
-                        tracing::warn!("Payload too long.");
-                        Payload::new_unchecked(format!(
-                            "{} Payload too long",
-                            text[..meshtastic_api::payload::MAX_PAYLOAD_SIZE - 17].to_string()
-                        ))
-                    }
-                };
-
-                let target = if packet.to == Target::PrimaryChannel {
-                    Target::PrimaryChannel
-                } else {
-                    Target::NodeId(packet.from)
-                };
-
-                if let Err(e) = self
-                    .meshtastic_api
-                    .send_message(payload.clone(), target.clone(), None)
-                    .await
-                {
-                    tracing::warn!("Failed to send Message to {}: {}", target.into_id(), e);
-                };
-                tracing::info!("Sent Message {:?}", payload);
+            if packet.via_mqtt {
+                continue;
             }
+
+            let text = self
+                .get_forecast_text(lat, lon)
+                .await
+                .map_or_else(|e_fc| e_fc, |fc| fc);
+            let payload = match Payload::new(text.clone()) {
+                Ok(payload) => payload,
+                Err(_) => {
+                    tracing::warn!("Payload too long.");
+                    Payload::new_unchecked(format!(
+                        "{} Payload too long",
+                        text[..meshtastic_api::payload::MAX_PAYLOAD_SIZE - 17].to_string()
+                    ))
+                }
+            };
+
+            let target = if packet.to == Target::PrimaryChannel {
+                Target::PrimaryChannel
+            } else {
+                Target::NodeId(packet.from)
+            };
+
+            if let Err(e) = self
+                .meshtastic_api
+                .send_message(payload.clone(), target.clone(), None)
+                .await
+            {
+                tracing::warn!("Failed to send Message to {}: {}", target.into_id(), e);
+            };
+            tracing::info!("Sent Message {:?}", payload);
         }
 
         Ok(())
