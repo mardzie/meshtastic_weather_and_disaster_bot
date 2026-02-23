@@ -323,6 +323,10 @@ impl Bot {
             Press: {:.0}\n\
             Wind: {} m/s; Deg: {}",
             fcs.date_time_txt,
+            fcs.weather.iter().fold(String::new(), |mut acc, v| {
+                acc.push_str(v);
+                acc
+            }),
             fcs.temp.temp.round(),
             fcs.temp.feels_like.round(),
             fcs.clouds,
@@ -330,10 +334,6 @@ impl Bot {
             fcs.rain.map_or(0.0, |r| r),
             fcs.snow.map_or(0.0, |s| s),
             fcs.pressure.pressure.round(),
-            fcs.weather.iter().fold(String::new(), |mut acc, v| {
-                acc.push_str(v);
-                acc
-            }),
             fcs.wind.speed,
             fcs.wind.deg
         )
