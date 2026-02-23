@@ -80,10 +80,11 @@ impl MeshtasticApi {
         UnboundedReceiver<meshtastic::protobufs::FromRadio>,
     ) {
         while let Some(from_radio) = listener.recv().await {
-            tracing::trace!("Got message: {:?}", from_radio);
+            tracing::trace!("Got possible MyInfo: {:?}", from_radio);
             if let Some(payload_variant) = from_radio.payload_variant {
                 match payload_variant {
                     protobufs::from_radio::PayloadVariant::MyInfo(my_node_info) => {
+                        tracing::info!("Received MyInfo: {:?}", my_node_info);
                         return (my_node_info, listener);
                     }
                     _ => {}
