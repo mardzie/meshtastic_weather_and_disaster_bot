@@ -75,17 +75,10 @@ impl Bot {
     }
 
     pub async fn run(&mut self) -> Result<(), Error> {
-        let _ = self
-            .meshtastic_api
-            .send_message(
-                Payload::new_unchecked("Weather Bot Starting".to_string()),
-                Target::PrimaryChannel,
-                None,
-            )
-            .await;
+        tracing::info!("Started running.");
 
         while let Some(packet) = self.packet_receiver.recv().await {
-            tracing::trace!("Got packet: {:?}", packet);
+            tracing::debug!("Got packet: {:?}", packet);
 
             let args: Vec<&str> = packet.payload.trim().split(' ').collect();
             if args.first() != Some(&self.config.forecast_request_command.as_str()) {

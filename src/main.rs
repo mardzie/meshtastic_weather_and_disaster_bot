@@ -19,7 +19,6 @@ async fn main() -> Result<()> {
         .with_thread_ids(false)
         .with_target(false)
         .pretty()
-        //.with_env_filter(EnvFilter::new("error,meshtastic=off"))
         .init();
 
     let mut bot = Bot::new().await?;

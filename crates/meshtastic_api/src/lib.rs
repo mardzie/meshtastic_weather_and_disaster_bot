@@ -37,16 +37,19 @@ impl MeshtasticApi {
         tracing::trace!("Serial stream created.");
         let (decoded_listener, stream_api) = stream_api.connect(stream_handle).await;
 
+        tracing::debug!("Waiting for own node id...");
         let my_info_task = tokio::task::spawn(async { Self::wait_for_my_info(decoded_listener) });
 
         let config_id = meshtastic::utils::generate_rand_id();
         let stream_api = stream_api.configure(config_id).await?;
 
         let (my_node_info, decoded_listener) = my_info_task.await?.await;
+        tracing::debug!("Got own node id: {}", my_node_info.my_node_num);
 
         let node_id = NodeId::from(my_node_info);
         let router = Router::new(node_id.inner());
 
+        tracing::debug!("Starting packet reader...");
         let (exit_sender, mut rx) = tokio::sync::broadcast::channel(1);
         let listener_task = tokio::task::spawn(async move {
             tokio::select! {
@@ -58,6 +61,7 @@ impl MeshtasticApi {
                 }
             }
         });
+        tracing::debug!("Packet reader started.");
 
         Ok(Self {
             stream_api,
@@ -76,6 +80,7 @@ impl MeshtasticApi {
         UnboundedReceiver<meshtastic::protobufs::FromRadio>,
     ) {
         while let Some(from_radio) = listener.recv().await {
+            tracing::trace!("Got message: {:?}", from_radio);
             if let Some(payload_variant) = from_radio.payload_variant {
                 match payload_variant {
                     protobufs::from_radio::PayloadVariant::MyInfo(my_node_info) => {
@@ -97,6 +102,7 @@ impl MeshtasticApi {
             if let Some(payload_variant) = from_radio.payload_variant {
                 match payload_variant {
                     protobufs::from_radio::PayloadVariant::Packet(mesh_packet) => {
+                        tracing::debug!("Got Packet: {:?}", mesh_packet);
                         if let Err(_) = Self::handle_mesh_packet(mesh_packet, &sender).await {
                             return;
                         };
