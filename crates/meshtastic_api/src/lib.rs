@@ -99,6 +99,7 @@ impl MeshtasticApi {
         sender: tokio::sync::mpsc::Sender<Packet>,
     ) {
         while let Some(from_radio) = listener.recv().await {
+            tracing::trace!("New from radio: {}", from_radio.id);
             if let Some(payload_variant) = from_radio.payload_variant {
                 match payload_variant {
                     protobufs::from_radio::PayloadVariant::Packet(mesh_packet) => {
@@ -107,7 +108,9 @@ impl MeshtasticApi {
                             return;
                         };
                     }
-                    _ => {}
+                    _ => {
+                        tracing::trace!("Other from radio.");
+                    }
                 }
             }
         }
